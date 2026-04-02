@@ -1,0 +1,453 @@
+﻿<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>BladeBattle - Made by Alu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap');
+        :root { --blade-teal: #14b8a6; --blade-red: #ef4444; --blade-dark: #070707; }
+        
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: var(--blade-dark); 
+            color: #fff; 
+            user-select: none; 
+            overflow: hidden; 
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+
+        #chaos-bg-layer {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 180vw;
+            height: 180vh;
+            transform: translate(-50%, -50%);
+            background-image: url('https://i.pinimg.com/originals/33/a1/91/33a1914c232e8efa8a262662af386b91.gif');
+            background-size: cover;
+            z-index: -1;
+            display: none;
+            filter: brightness(0.4) contrast(1.2);
+        }
+
+
+        @keyframes rgb-glitch {
+            0% { text-shadow: 2px 0 #ff0000, -2px 0 #0000ff; }
+            50% { text-shadow: 2px 0 #00ff00, -2px 0 #ff00ff; }
+            100% { text-shadow: -2px 0 #ff0000, 2px 0 #0000ff; }
+        }
+
+
+        .chaos-mode-active .glitch-ui { animation: rgb-glitch 0.2s infinite; }
+        .font-bungee { font-family: 'Bungee', cursive; }
+
+
+        header { padding: 8px 16px; background: rgba(0,0,0,0.9); border-bottom: 1px solid rgba(255,255,255,0.05); z-index: 30; }
+
+
+        .difficulty-container { background: rgba(255,255,255,0.05); border-radius: 8px; padding: 10px; margin: 8px 0; }
+        .difficulty-slider { -webkit-appearance: none; width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 10px; outline: none; }
+        .difficulty-slider::-webkit-slider-thumb { -webkit-appearance: none; width: 22px; height: 22px; background: #fff; border-radius: 6px; border: 3px solid var(--blade-teal); }
+        .chaos-mode-active .difficulty-slider::-webkit-slider-thumb { border-color: var(--blade-red); background: #000; box-shadow: 0 0 15px var(--blade-red); }
+
+
+        .combo-btn-group { display: flex; gap: 4px; margin-bottom: 8px; }
+        .combo-btn { flex: 1; padding: 6px 0; background: rgba(255,255,255,0.05); border-radius: 4px; font-size: 7px; font-weight: 900; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.1); }
+        .combo-btn.active { background: var(--blade-teal); border-color: var(--blade-teal); }
+        .chaos-mode-active .combo-btn.active { background: var(--blade-red); border-color: var(--blade-red); }
+
+
+        .filter-row { display: flex; justify-content: space-between; gap: 4px; margin-bottom: 4px; }
+        .checkbox-container { 
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            padding: 6px 0; border-radius: 4px; background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05); transition: all 0.2s;
+        }
+        .checkbox-container.active { background: rgba(20, 184, 166, 0.15); border-color: var(--blade-teal); color: var(--blade-teal); }
+        .chaos-mode-active .checkbox-container.active { border-color: var(--blade-red); color: var(--blade-red); background: rgba(239, 68, 68, 0.1); }
+        .checkbox-container input { display: none; }
+        .checkbox-label { font-size: 7px; font-weight: 800; text-transform: uppercase; }
+
+
+        main { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; padding: 10px; z-index: 20; overflow-y: auto; }
+
+
+        .grind-card { 
+            background: rgba(0,0,0,0.95); border: 2px solid rgba(255,255,255,0.1); 
+            border-radius: 20px; padding: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        .chaos-mode-active .grind-card { border-color: var(--blade-red); }
+
+
+        .badge-matrix { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+        .variation-badge { 
+            height: 24px; border-radius: 4px; 
+            border: 1px solid rgba(255,255,255,0.15);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 6px; font-weight: 900; text-transform: uppercase; color: rgba(255,255,255,0.15);
+        }
+        .variation-badge.filled { 
+            color: var(--blade-teal); 
+            background: rgba(20, 184, 166, 0.1); 
+            border-color: var(--blade-teal);
+        }
+        .chaos-mode-active .variation-badge.filled { 
+            background: var(--blade-red) !important; 
+            color: white !important; 
+            border-color: white !important;
+        }
+
+
+        .label-main { font-size: 24px; font-family: 'Bungee'; text-align: center; margin-top: 12px; line-height: 1.2; }
+        .chaos-mode-active .text-chaos-red { color: var(--blade-red) !important; text-shadow: 2px 2px 0px #000; }
+
+
+        #chaos-popup {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.95); z-index: 100;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            padding: 30px; text-align: center;
+        }
+
+
+        footer { padding: 16px; background: rgba(0,0,0,0.9); z-index: 30; }
+        .spin-btn {
+            background: var(--blade-teal); padding: 18px 0; width: 100%;
+            border-radius: 14px; font-family: 'Bungee'; font-size: 18px; color: white;
+            box-shadow: 0 4px 0px #0d7a6e; transition: transform 0.1s;
+        }
+        .spin-btn:active { transform: translateY(2px); box-shadow: 0 2px 0px #0d7a6e; }
+        .chaos-mode-active .spin-btn { background: var(--blade-red); box-shadow: 0 4px 0px #991b1b; }
+    </style>
+</head>
+<body id="body-el">
+
+
+    <div id="chaos-bg-layer"></div>
+
+
+    <div id="chaos-popup" onclick="this.style.display='none'">
+        <i class="fas fa-skull text-7xl text-red-600 mb-6"></i>
+        <h2 class="font-bungee text-2xl text-white uppercase glitch-ui">CHAOS MODE</h2>
+        <p class="font-black text-red-500 uppercase text-lg mt-4 tracking-tighter glitch-ui">Blijf rollen.</p>
+    </div>
+
+
+    <header>
+        <div class="flex justify-between items-center mb-1">
+            <h1 class="text-sm font-bungee text-chaos-red uppercase glitch-ui">BLADE<span class="text-teal-500">BATTLE</span></h1>
+            <div class="text-[7px] font-black opacity-60 text-white tracking-[0.2em] uppercase glitch-ui">MADE BY ALU - 2026</div>
+        </div>
+
+
+        <div class="difficulty-container">
+            <input type="range" min="1" max="6" value="1" class="difficulty-slider" id="diffRange" oninput="updateDiff(this.value)" onchange="playBeep()">
+            <div class="flex justify-between text-[6px] font-black uppercase mt-1 text-chaos-red">
+                <span id="d-1" class="text-teal-500">Beginner</span><span id="d-2" class="opacity-30">Novice</span><span id="d-3" class="opacity-30">Amateur</span>
+                <span id="d-4" class="opacity-30">Expert</span><span id="d-5" class="opacity-30">Pro</span><span id="d-6" class="opacity-30 glitch-ui">Chaos</span>
+            </div>
+        </div>
+
+
+        <div class="combo-btn-group">
+            <button onclick="setCombo(1)" id="c-1" class="combo-btn active">Single</button>
+            <button onclick="setCombo(2)" id="c-2" class="combo-btn">Double</button>
+            <button onclick="setCombo(3)" id="c-3" class="combo-btn">Triple</button>
+        </div>
+
+
+        <div class="filter-row">
+            <label class="checkbox-container active" id="f-approach"><input type="checkbox" checked onchange="toggleFilter('approach')"><span class="checkbox-label">Approach</span></label>
+            <label class="checkbox-container active" id="f-topside"><input type="checkbox" checked onchange="toggleFilter('topside')"><span class="checkbox-label">Topside</span></label>
+            <label class="checkbox-container active" id="f-negative"><input type="checkbox" checked onchange="toggleFilter('negative')"><span class="checkbox-label">Negative</span></label>
+            <label class="checkbox-container active" id="f-rough"><input type="checkbox" checked onchange="toggleFilter('rough')"><span class="checkbox-label">Rough</span></label>
+        </div>
+        <div class="filter-row">
+            <label class="checkbox-container active" id="f-extra"><input type="checkbox" checked onchange="toggleFilter('extra')"><span class="checkbox-label">Extra</span></label>
+            <label class="checkbox-container active" id="f-landing"><input type="checkbox" checked onchange="toggleFilter('landing')"><span class="checkbox-label">Landing</span></label>
+            <label class="checkbox-container active" id="f-stance"><input type="checkbox" checked onchange="toggleFilter('stance')"><span class="checkbox-label">Stance</span></label>
+            <label class="checkbox-container active" id="f-out"><input type="checkbox" checked onchange="toggleFilter('out')"><span class="checkbox-label">Out</span></label>
+        </div>
+    </header>
+
+
+    <main id="app-view"></main>
+
+
+    <footer>
+        <button id="spin-btn" onclick="spin()" class="spin-btn uppercase">Roll de trick!</button>
+    </footer>
+
+
+    <script>
+        const chaosAudio = new Audio("https://www.myinstants.com/media/sounds/dawn_of_war_-_chaos_marine_laugh_1.mp3");
+        const wrongHouseAudio = new Audio("https://www.myinstants.com/media/sounds/you-picked-the-wrong-house-fool-1.mp3");
+        
+        let audioCtx;
+        function initAudio() { if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+
+
+        function playBeep() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.frequency.setValueAtTime(220, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.1);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+
+        function playRollSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 0.2);
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.2);
+        }
+
+
+        function triggerChaosPopup() {
+            if (state.diff === 6) {
+                wrongHouseAudio.currentTime = 0;
+                wrongHouseAudio.play().catch(() => {});
+                document.getElementById('chaos-popup').style.display = 'flex';
+            }
+        }
+
+
+        const DATA = {
+            soul: { 
+                1: ["Soul", "Mizou"], 
+                2: ["Makio", "Acid"], 
+                3: ["Pornstar", "Mistrial"], 
+                4: ["Torque Soul", "X Grind", "Stub Soul"], 
+                5: ["Hot Dog", "Kindgrind"], 
+                6: ["Overpuss", "Soyale", "Sunny Day", "Sweatstance", "Fishbrain"] 
+            },
+            groove: { 
+                1: ["Frontside", "Backside"], 
+                2: ["UFO", "Backside UFO"], 
+                3: ["Farf", "Back Farf", "Royale", "Back Royale"], 
+                4: ["Unity", "Torque", "Backslide"], 
+                5: ["Fastslide", "Tabernacle", "Wheelbarrow", "Savannah"], 
+                6: ["Cab Driver", "Darkslide", "Pudslide", "Backside Savannah"] 
+            }
+        };
+
+
+        const SPINS = {
+            soul: { 1: [""], 2: ["Alley-Oop"], 3: ["Zerospin", "Outspin 180", "Inspin 180"], 4: ["True"], 5: [""], 6: ["Inspin 360", "Outspin 360", "360", "Hurricane"] },
+            groove: { 1: [""], 2: [""], 3: ["Zerospin", "270"], 5: ["Inspin 270", "Outspin 360"] }
+        };
+
+
+        const ONE_FOOT_TRICKS = ["Makio", "Fishbrain", "Fastslide", "Backslide"];
+        const NO_TOPSIDE_TRICKS = ["Sweatstance", "Kindgrind", "Makio", "Fishbrain", "Misfit", "X Grind", "X-Grind"];
+
+
+        let historyTricks = [];
+        let historyVars = [];
+
+
+        let state = { 
+            comboSize: 1, 
+            diff: 1, 
+            hasSpin: false, 
+            filters: { approach: true, topside: true, negative: true, rough: true, extra: true, landing: true, stance: true, out: true }, 
+            combo: [] 
+        };
+
+
+        function updateDiff(v) {
+            state.diff = parseInt(v);
+            const body = document.getElementById('body-el');
+            const bg = document.getElementById('chaos-bg-layer');
+            document.querySelectorAll('[id^="d-"]').forEach((s, i) => {
+                s.className = (i+1 == state.diff) ? "text-teal-500 font-black" : "opacity-30";
+                if(state.diff === 6 && i === 5) s.className = "text-red-600 font-black glitch-ui";
+            });
+            bg.style.display = (state.diff === 6) ? 'block' : 'none';
+            body.className = (state.diff === 6) ? 'chaos-mode-active' : '';
+            render();
+        }
+
+
+        function setCombo(n) {
+            playBeep();
+            if(state.diff === 6) { triggerChaosPopup(); return; }
+            state.comboSize = n;
+            document.querySelectorAll('.combo-btn').forEach((b, i) => b.classList.toggle('active', i+1 === n));
+        }
+
+
+        function toggleFilter(f) {
+            playBeep();
+            if(state.diff === 6) { triggerChaosPopup(); return; }
+            state.filters[f] = !state.filters[f];
+            document.getElementById(`f-${f}`).classList.toggle('active', state.filters[f]);
+        }
+
+
+        function spin() {
+            if (state.diff === 6) { 
+                chaosAudio.currentTime = 0; 
+                chaosAudio.play().catch(() => {}); 
+            } else {
+                playRollSound();
+            }
+            state.hasSpin = true;
+            state.combo = [];
+            for(let i=0; i<state.comboSize; i++) {
+                state.combo.push(generateTrick());
+            }
+            render();
+        }
+
+
+        function generateTrick() {
+            let soulPool = []; let groovePool = [];
+            for(let i=1; i<=state.diff; i++) {
+                soulPool.push(...(DATA.soul[i] || []));
+                groovePool.push(...(DATA.groove[i] || []));
+            }
+            let baseTrick;
+            let attempts = 0;
+            do {
+                baseTrick = Math.random() > 0.5 ? soulPool[Math.floor(Math.random()*soulPool.length)] : groovePool[Math.floor(Math.random()*groovePool.length)];
+                attempts++;
+            } while(historyTricks.includes(baseTrick) && attempts < 15);
+            
+            historyTricks.push(baseTrick);
+            if(historyTricks.length > 3) historyTricks.shift();
+            
+            const isSoul = soulPool.includes(baseTrick);
+            
+            let appPool = [""];
+            if(state.filters.approach) {
+                for(let i=1; i<=state.diff; i++) {
+                    appPool.push(...(SPINS[isSoul ? 'soul' : 'groove'][i] || []));
+                }
+            }
+            
+            let result;
+            let varKey;
+            attempts = 0;
+            do {
+                let approach = appPool[Math.floor(Math.random()*appPool.length)];
+                
+                // TOPSIDE Kans (standaard)
+                let topside = (isSoul && state.filters.topside && state.diff >= 3 && Math.random() > 0.7) ? "Topside" : "";
+                
+                let rough = (state.filters.rough && state.diff >= 4 && Math.random() > 0.85) ? "Rough" : "";
+                let finalTrickName = baseTrick;
+                
+                // Transformaties
+                if (finalTrickName === "Mizou") {
+                    if (topside === "Topside") topside = ""; 
+                    if (approach === "Alley-Oop") approach = ""; 
+                }
+                if (finalTrickName === "Kindgrind" && approach === "Alley-Oop") approach = ""; 
+                if (finalTrickName === "Mistrial" && approach === "Alley-Oop" && topside === "Topside") {
+                    finalTrickName = "Misfit"; approach = ""; topside = "";
+                }
+                if (finalTrickName === "Pornstar" && rough === "Rough") {
+                    finalTrickName = "Tea Kettle"; rough = ""; 
+                }
+
+
+                if (NO_TOPSIDE_TRICKS.includes(finalTrickName)) topside = "";
+
+
+                const isOneFootEligible = ONE_FOOT_TRICKS.includes(finalTrickName);
+
+
+                // LANDING LOGIC: Farside, Disaster en Darkside boosten op Expert/Pro
+                let landingChance = 0.05; 
+                if(state.diff === 4) landingChance = 0.20;
+                if(state.diff === 5) landingChance = 0.40;
+                if(state.diff === 6) landingChance = 0.60;
+
+
+                let landing = "";
+                if(state.filters.landing && state.diff >= 4 && Math.random() < landingChance) {
+                    const lRand = Math.random();
+                    if (lRand < 0.33) landing = "Disaster";
+                    else if (lRand < 0.66) landing = "Darkside";
+                    else landing = "Farside";
+                }
+
+
+                result = {
+                    displayTrick: finalTrickName,
+                    stance: (state.filters.stance && state.diff >= 4 && Math.random() > 0.7) ? "Switch" : "",
+                    approach: approach,
+                    topside: topside,
+                    negative: (isSoul && state.filters.negative && state.diff >= 4 && Math.random() > 0.8) ? "Negative" : "",
+                    rough: rough,
+                    extra: (state.filters.extra && isOneFootEligible && state.diff >= 3 && Math.random() > 0.5) ? 
+                           (["Grabbed", "Rocket", "Christ"][Math.floor(Math.random()*3)]) : "",
+                    landing: landing,
+                    out: (state.filters.out && state.diff >= 3 && Math.random() > 0.7) ? (isSoul ? "180 Out" : "270 Out") : ""
+                };
+                varKey = JSON.stringify(result);
+                attempts++;
+            } while(historyVars.includes(varKey) && attempts < 10);
+            
+            historyVars.push(varKey);
+            if(historyVars.length > 3) historyVars.shift();
+            return result;
+        }
+
+
+        function render() {
+            const main = document.getElementById('app-view');
+            if(!state.hasSpin) {
+                main.innerHTML = `<div class="text-center opacity-20 font-bungee text-xl text-chaos-red uppercase glitch-ui">READY TO ROLL</div>`;
+                return;
+            }
+            main.innerHTML = state.combo.map(s => {
+                const badges = [
+                    {id: 'stance', val: s.stance}, {id: 'approach', val: s.approach},
+                    {id: 'topside', val: s.topside}, {id: 'negative', val: s.negative},
+                    {id: 'rough', val: s.rough}, {id: 'grab/var', val: s.extra},
+                    {id: 'landing', val: s.landing}, {id: 'out', val: s.out}
+                ];
+                return `
+                    <div class="grind-card">
+                        <div class="badge-matrix">
+                            ${badges.map(b => `
+                                <div onclick="playBeep(); ${state.diff===6?'triggerChaosPopup()':''}" 
+                                     class="variation-badge ${b.val?'filled':''}">
+                                    ${b.val || b.id}
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="label-main text-chaos-red uppercase glitch-ui">${s.displayTrick}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+
+        window.onload = () => {
+            updateDiff(1);
+            document.body.addEventListener('click', initAudio, { once: true });
+        };
+    </script>
+</body>
+</html>
