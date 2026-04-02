@@ -3,9 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#070707">
+    <meta name="description" content="BladeBattle - Inline Skate Trick Generator">
+
+
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" href="icon.png">
+
+
+    <link rel="manifest" href="data:application/json;base64,ewogICJuYW1lIjogIkJsYWRlQmF0dGxlIDUuMCIsCiAgInNob3J0X25hbWUiOiAiQmxhZGVCYXR0bGUiLAogICJkZXNjcmlwdGlvbiI6ICJJbmxpbmUgU2thdGUgVHJpY2sgR2VuZXJhdG9yIiwKICAic3RhcnRfdXJsIjogIi4iLAogICJkaXNwbGF5IjogInN0YW5kYWxvbmUiLAogICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwNzA3MDciLAogICJ0aGVtZV9jb2xvciI6ICIjMTRiOGE2IiwKICAiaWNvbnMiOiBbCiAgICB7CiAgICAgICJzcmMiOiAiaWNvbi5wbmciLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLAogICAgICAic2l6ZXMiOiAiMTkyeDE5MiIsCiAgICAgICJwdXJwb3NlIjogImFueSIKICAgIH0sCiAgICB7CiAgICAgICJzcmMiOiAiaWNvbi5wbmciLAogICAgICAidHlwZSI6ICJpbWFnZS9wbmciLAogICAgICAic2l6ZXMiOiAiNTEyeDUxMiIsCiAgICAgICJwdXJwb3NlIjogImFueSBtYXNrYWJsZSIKICAgIH0KICBdCn0=">
+
+
     <title>BladeBattle - Made by Alu</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Bungee&family=Inter:wght@400;700;900&display=swap');
         :root { --blade-teal: #14b8a6; --blade-red: #ef4444; --blade-dark: #070707; }
@@ -20,21 +36,15 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            overscroll-behavior-y: contain; /* Voorkomt pull-to-refresh */
         }
 
 
         #chaos-bg-layer {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 180vw;
-            height: 180vh;
+            position: fixed; top: 50%; left: 50%; width: 180vw; height: 180vh;
             transform: translate(-50%, -50%);
             background-image: url('https://i.pinimg.com/originals/33/a1/91/33a1914c232e8efa8a262662af386b91.gif');
-            background-size: cover;
-            z-index: -1;
-            display: none;
-            filter: brightness(0.4) contrast(1.2);
+            background-size: cover; z-index: -1; display: none; filter: brightness(0.4) contrast(1.2);
         }
 
 
@@ -188,6 +198,21 @@
 
 
     <script>
+        // --- PWA Service Worker voor Offline Gebruik ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                const swCode = `
+                    const CACHE_NAME = 'bladebattle-v5';
+                    const urlsToCache = [ './', 'index.html', 'icon.png' ];
+                    self.addEventListener('install', e => e.waitUntil(caches.open(CACHE_NAME).then(c => c.addAll(urlsToCache))));
+                    self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+                `;
+                const blob = new Blob([swCode], { type: 'application/javascript' });
+                navigator.serviceWorker.register(URL.createObjectURL(blob));
+            });
+        }
+
+
         const chaosAudio = new Audio("https://www.myinstants.com/media/sounds/dawn_of_war_-_chaos_marine_laugh_1.mp3");
         const wrongHouseAudio = new Audio("https://www.myinstants.com/media/sounds/you-picked-the-wrong-house-fool-1.mp3");
         
@@ -232,32 +257,26 @@
 
         const DATA = {
             soul: { 
-                1: ["Soul", "Mizou"], 
-                2: ["Makio", "Acid"], 
-                3: ["Pornstar", "Mistrial"], 
-                4: ["Torque Soul", "X Grind", "Stub Soul"], 
-                5: ["Hot Dog", "Kindgrind"], 
+                1: ["Soul", "Mizou"], 2: ["Makio", "Acid"], 3: ["Pornstar", "Mistrial"], 
+                4: ["Torque Soul", "X Grind", "Stub Soul"], 5: ["Hot Dog", "Kindgrind"], 
                 6: ["Overpuss", "Soyale", "Sunny Day", "Sweatstance", "Fishbrain"] 
             },
             groove: { 
-                1: ["Frontside", "Backside"], 
-                2: ["UFO", "Backside UFO"], 
-                3: ["Farf", "Back Farf", "Royale", "Back Royale"], 
-                4: ["Unity", "Torque", "Backslide"], 
-                5: ["Fastslide", "Tabernacle", "Wheelbarrow", "Savannah"], 
+                1: ["Frontside", "Backside"], 2: ["UFO", "Backside UFO"], 3: ["Farf", "Back Farf", "Royale", "Back Royale"], 
+                4: ["Unity", "Torque", "Backslide"], 5: ["Fastslide", "Tabernacle", "Wheelbarrow", "Savannah"], 
                 6: ["Cab Driver", "Darkslide", "Pudslide", "Backside Savannah"] 
             }
         };
 
 
         const SPINS = {
-            soul: { 1: [""], 2: ["Alley-Oop"], 3: ["Zerospin", "Outspin 180", "Inspin 180"], 4: ["True"], 5: [""], 6: ["Inspin 360", "Outspin 360", "360", "Hurricane"] },
+            soul: { 1: [""], 2: ["Alley-Oop"], 3: ["Zerospin", "Outspin 180", "Inspin 180"], 4: ["True"], 6: ["Inspin 360", "Outspin 360", "360", "Hurricane"] },
             groove: { 1: [""], 2: [""], 3: ["Zerospin", "270"], 5: ["Inspin 270", "Outspin 360"] }
         };
 
 
         const ONE_FOOT_TRICKS = ["Makio", "Fishbrain", "Fastslide", "Backslide"];
-        const NO_TOPSIDE_TRICKS = ["Sweatstance", "Kindgrind", "Makio", "Fishbrain", "Misfit", "X Grind", "X-Grind"];
+        const NO_TOPSIDE_TRICKS = ["Sweatstance", "Kindgrind", "Makio", "Fishbrain", "Misfit", "X Grind"];
 
 
         let historyTricks = [];
@@ -265,9 +284,7 @@
 
 
         let state = { 
-            comboSize: 1, 
-            diff: 1, 
-            hasSpin: false, 
+            comboSize: 1, diff: 1, hasSpin: false, 
             filters: { approach: true, topside: true, negative: true, rough: true, extra: true, landing: true, stance: true, out: true }, 
             combo: [] 
         };
@@ -305,16 +322,13 @@
 
         function spin() {
             if (state.diff === 6) { 
-                chaosAudio.currentTime = 0; 
-                chaosAudio.play().catch(() => {}); 
+                chaosAudio.currentTime = 0; chaosAudio.play().catch(() => {}); 
             } else {
                 playRollSound();
             }
             state.hasSpin = true;
             state.combo = [];
-            for(let i=0; i<state.comboSize; i++) {
-                state.combo.push(generateTrick());
-            }
+            for(let i=0; i<state.comboSize; i++) { state.combo.push(generateTrick()); }
             render();
         }
 
@@ -336,12 +350,9 @@
             if(historyTricks.length > 3) historyTricks.shift();
             
             const isSoul = soulPool.includes(baseTrick);
-            
             let appPool = [""];
             if(state.filters.approach) {
-                for(let i=1; i<=state.diff; i++) {
-                    appPool.push(...(SPINS[isSoul ? 'soul' : 'groove'][i] || []));
-                }
+                for(let i=1; i<=state.diff; i++) { appPool.push(...(SPINS[isSoul ? 'soul' : 'groove'][i] || [])); }
             }
             
             let result;
@@ -349,58 +360,30 @@
             attempts = 0;
             do {
                 let approach = appPool[Math.floor(Math.random()*appPool.length)];
-                
-                // TOPSIDE Kans (standaard)
                 let topside = (isSoul && state.filters.topside && state.diff >= 3 && Math.random() > 0.7) ? "Topside" : "";
-                
                 let rough = (state.filters.rough && state.diff >= 4 && Math.random() > 0.85) ? "Rough" : "";
                 let finalTrickName = baseTrick;
                 
-                // Transformaties
-                if (finalTrickName === "Mizou") {
-                    if (topside === "Topside") topside = ""; 
-                    if (approach === "Alley-Oop") approach = ""; 
-                }
+                if (finalTrickName === "Mizou") { if (topside === "Topside") topside = ""; if (approach === "Alley-Oop") approach = ""; }
                 if (finalTrickName === "Kindgrind" && approach === "Alley-Oop") approach = ""; 
-                if (finalTrickName === "Mistrial" && approach === "Alley-Oop" && topside === "Topside") {
-                    finalTrickName = "Misfit"; approach = ""; topside = "";
-                }
-                if (finalTrickName === "Pornstar" && rough === "Rough") {
-                    finalTrickName = "Tea Kettle"; rough = ""; 
-                }
-
-
+                if (finalTrickName === "Mistrial" && approach === "Alley-Oop" && topside === "Topside") { finalTrickName = "Misfit"; approach = ""; topside = ""; }
+                if (finalTrickName === "Pornstar" && rough === "Rough") { finalTrickName = "Tea Kettle"; rough = ""; }
                 if (NO_TOPSIDE_TRICKS.includes(finalTrickName)) topside = "";
 
 
-                const isOneFootEligible = ONE_FOOT_TRICKS.includes(finalTrickName);
-
-
-                // LANDING LOGIC: Farside, Disaster en Darkside boosten op Expert/Pro
-                let landingChance = 0.05; 
-                if(state.diff === 4) landingChance = 0.20;
-                if(state.diff === 5) landingChance = 0.40;
-                if(state.diff === 6) landingChance = 0.60;
-
-
                 let landing = "";
-                if(state.filters.landing && state.diff >= 4 && Math.random() < landingChance) {
-                    const lRand = Math.random();
-                    if (lRand < 0.33) landing = "Disaster";
-                    else if (lRand < 0.66) landing = "Darkside";
-                    else landing = "Farside";
+                if(state.filters.landing && state.diff >= 4 && Math.random() < (state.diff * 0.1)) {
+                    landing = ["Disaster", "Darkside", "Farside"][Math.floor(Math.random()*3)];
                 }
 
 
                 result = {
                     displayTrick: finalTrickName,
                     stance: (state.filters.stance && state.diff >= 4 && Math.random() > 0.7) ? "Switch" : "",
-                    approach: approach,
-                    topside: topside,
+                    approach: approach, topside: topside,
                     negative: (isSoul && state.filters.negative && state.diff >= 4 && Math.random() > 0.8) ? "Negative" : "",
                     rough: rough,
-                    extra: (state.filters.extra && isOneFootEligible && state.diff >= 3 && Math.random() > 0.5) ? 
-                           (["Grabbed", "Rocket", "Christ"][Math.floor(Math.random()*3)]) : "",
+                    extra: (state.filters.extra && ONE_FOOT_TRICKS.includes(finalTrickName) && state.diff >= 3 && Math.random() > 0.5) ? ["Grabbed", "Rocket", "Christ"][Math.floor(Math.random()*3)] : "",
                     landing: landing,
                     out: (state.filters.out && state.diff >= 3 && Math.random() > 0.7) ? (isSoul ? "180 Out" : "270 Out") : ""
                 };
@@ -422,24 +405,14 @@
             }
             main.innerHTML = state.combo.map(s => {
                 const badges = [
-                    {id: 'stance', val: s.stance}, {id: 'approach', val: s.approach},
-                    {id: 'topside', val: s.topside}, {id: 'negative', val: s.negative},
-                    {id: 'rough', val: s.rough}, {id: 'grab/var', val: s.extra},
-                    {id: 'landing', val: s.landing}, {id: 'out', val: s.out}
+                    {id: 'stance', val: s.stance}, {id: 'approach', val: s.approach}, {id: 'topside', val: s.topside}, {id: 'negative', val: s.negative},
+                    {id: 'rough', val: s.rough}, {id: 'grab/var', val: s.extra}, {id: 'landing', val: s.landing}, {id: 'out', val: s.out}
                 ];
                 return `
                     <div class="grind-card">
-                        <div class="badge-matrix">
-                            ${badges.map(b => `
-                                <div onclick="playBeep(); ${state.diff===6?'triggerChaosPopup()':''}" 
-                                     class="variation-badge ${b.val?'filled':''}">
-                                    ${b.val || b.id}
-                                </div>
-                            `).join('')}
-                        </div>
+                        <div class="badge-matrix">${badges.map(b => `<div onclick="playBeep(); ${state.diff===6?'triggerChaosPopup()':''}" class="variation-badge ${b.val?'filled':''}">${b.val || b.id}</div>`).join('')}</div>
                         <div class="label-main text-chaos-red uppercase glitch-ui">${s.displayTrick}</div>
-                    </div>
-                `;
+                    </div>`;
             }).join('');
         }
 
